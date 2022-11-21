@@ -3,6 +3,7 @@
 import UserInfoComponent from "./UserInfoComponent";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useHttpClient } from '../../hooks/http-hook'
+import MenuItem from '@mui/material/MenuItem';
 
 import { IoDiamond } from "react-icons/io5";
 import ScrollToBottom from "react-scroll-to-bottom";
@@ -11,7 +12,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { DataGrid } from '@mui/x-data-grid';
 import TablePagination from '@mui/material/TablePagination';
-
+import Select from 'react-select';
 
 import classes from "./Search.module.css";
 
@@ -194,6 +195,11 @@ const UserSearchComponent = () => {
   const [goalflag,setgoalFlag] = useState(1);
   const [experienceflag,setexperienceFlag] = useState(1);
   const [locationflag,setlocationFlag] = useState(1);
+  const [valueflag,setValueFlag] = useState();
+  const [searchValues,setsearchValues] = useState([1,1,1,1]);
+  const [countflag,setCountFlag] = useState(1);
+  const [searchIndex,setSearchIndex] = useState(1);
+  
 
   const [roleflag,setroleFlag] = useState(1);
   const [userMatchesToRender, setUserMatchesToRender] = useState();
@@ -209,11 +215,28 @@ const UserSearchComponent = () => {
   console.log(token)
   const authorization = "Bearer "+token.token
   console.log(authorization)
+
+  const SearchOptions = [
+    { label: 'Goal', value: 1 },
+    { label: 'Role', value: 2 },
+    { label: 'Location', value: 3 },
+    { label: 'Experience', value: 4 },
+  ];
+  
+
+
   // const user
   const headers = {
     authorization: 'Bearer ' + token.token
 }; 
 
+useEffect(() => {
+  if(searchValues.length > 0){
+    console.log("inside this use effct")
+    console.log(searchIndex,"SEARCH INDEX")
+    customComponent(searchValues[searchIndex],searchIndex)
+  }
+}, [searchValues])
 
 const handleChangePage = (event, newPage) => {
   setPage(newPage);
@@ -623,16 +646,97 @@ const searchFilterLocationHandler = (event) => {
 };
 
 const Flagsetter = () => {
+  console.log(SearchOptions,"searchoption")
   setFlag(0);
 };
 const FlagNull = () => {
   setFlag(1);
-  setInputRoleValue('')
-  setInputGoalValue('')
-  setInputExperienceValue('')
-  setInputLocationValue('')
   setUsersviewed(userMatches)
 };
+
+const incrementFlag = () =>{
+  setCountFlag(countflag+1);
+}
+
+const handleChange = (event, index) => {
+  const value = event.target
+  console.log("valuessssssss:")
+  console.log(value)
+  console.log(index)
+  let searchFilters = [...searchValues]
+  searchFilters[index] = value
+  setsearchValues(searchFilters)
+  setSearchIndex(index)
+}
+
+// const changeEventHandler = () => {
+//   searchFilterGoalHandler
+// }
+
+const renderValue = (value) => {
+  // const value = searchValues[id]
+  // console.log("hgdjajahdkjahkd", value)
+
+  console.log("render valuesss")
+  console.log(value)
+  switch(value){
+    case 1:
+      return (
+          <input
+              value={inputGoalValue}
+              onChange={searchFilterGoalHandler}
+              placeholder="Type to search Goal..."
+          />
+      )
+      case 2:
+        return (
+          <input
+            value={inputRoleValue}
+            onChange={searchFilterRoleHandler}
+            placeholder="Type to search Role..."
+        />
+        )
+        case 3:
+          return (
+            <input
+              value={inputExperienceValue}
+              onChange={searchFilterExperienceHandler}
+              placeholder="Type to search Experience..."
+          />
+          )
+          case 4:
+            return (
+              <input
+                value={inputLocationValue}
+                onChange={searchFilterLocationHandler}
+                placeholder="Type to search Location..."
+            />
+            )   
+  }
+
+}
+
+const customComponent = (item, id) => {
+  console.log("inside the custom component")
+  console.log(id)
+  console.log(searchValues[id])
+  let newValue = searchValues[id]
+  console.log(newValue)
+  return (
+    <div>
+    <Select 
+    options={SearchOptions}
+    onChange={(event) => handleChange(event, id)}
+    value={newValue}
+  >
+          <MenuItem value={1}>Goal</MenuItem>
+          <MenuItem value={2}>Role</MenuItem>
+          <MenuItem value={3}>Location</MenuItem>
+          <MenuItem value={4}>Experience</MenuItem>
+  </Select>
+  </div>
+  )
+}
 
 return (
   <React.Fragment>
@@ -641,37 +745,14 @@ return (
     <div className={classes.TableWrapper}>
     {flag===1 && <div>
       <p className={classes.filtertext}>Apply Your Filters Here:</p>
-    <div className={classes.SearchBarWrapper}>
-          <div className={classes.SearchBarWrapperInner}>
-            <input
-              value={inputGoalValue}
-              onChange={searchFilterGoalHandler}
-              placeholder="Type to search Goal..."
-            />
-          </div>
-          <div className={classes.SearchBarWrapperInner}>
-            <input
-              value={inputRoleValue}
-              onChange={searchFilterRoleHandler}
-              placeholder="Type to search Role..."
-            />
-          </div>
-          <div className={classes.SearchBarWrapperInner}>
-            <input
-              value={inputExperienceValue}
-              onChange={searchFilterExperienceHandler}
-              placeholder="Type to search Experience..."
-            />
-          </div>
-          <div className={classes.SearchBarWrapperInner}>
-            <input
-              value={inputLocationValue}
-              onChange={searchFilterLocationHandler}
-              placeholder="Type to search Location..."
-            />
-          </div>
+      {/* <div className={classes.SearchBarWrapper}> */}
+      <div>
+   {/* {countflag && customComponent()} */}
+   {searchValues?.length > 0 && searchValues.map((item, id) => customComponent(item, id) )}
         <Button style={{background: 'darkorange' , color:"white"}} onClick={Flagsetter}>Search</Button>
         </div>
+        <Button style={{background: 'darkorange' , color:"white"}} onClick={incrementFlag}>Add New Filter</Button>
+
         </div>
 }
 {flag===0 &&
